@@ -2,8 +2,6 @@
 //  store_test.swift
 //  store_test
 //
-//  Created by Zabolotnyy Sergey on 20.10.2021.
-//
 
 import XCTest
 @testable import store
@@ -37,12 +35,9 @@ class store_test: XCTestCase {
         } catch {
             XCTFail("wrong error")
         }
-        do {
-            try storage?.get(key: "foo")
-        } catch TransactionalStorage.TransactionalStorageError.keyNotSet{
-            print("keyNotSet")
-        } catch {
-            XCTFail("wrong error")
+
+        XCTAssertThrowsError(try storage?.get(key: "foo"), "wrong error") { error in
+            XCTAssertEqual(error as? TransactionalStorage.TransactionalStorageError, TransactionalStorage.TransactionalStorageError.keyNotSet)
         }
     }
 
@@ -57,17 +52,9 @@ class store_test: XCTestCase {
     func testCommitTransaction() {
         storage?.begin()
         storage?.set(key: "foo", value: "456")
-        do {
-            try storage?.commit()
-        } catch {
-            XCTFail("wrong error")
-        }
-        do {
-            try storage?.rollback()
-        } catch TransactionalStorage.TransactionalStorageError.noTransaction {
-            print("noTransaction")
-        } catch {
-            XCTFail("wrong error")
+        try! storage?.commit()
+        XCTAssertThrowsError(try storage?.rollback(), "wrong error") { error in
+            XCTAssertEqual(error as? TransactionalStorage.TransactionalStorageError, TransactionalStorage.TransactionalStorageError.noTransaction)
         }
 
         XCTAssertEqual(try storage?.get(key: "foo"), "456", "Not valid value")
@@ -83,20 +70,13 @@ class store_test: XCTestCase {
 
         storage?.set(key: "bar", value: "def")
         XCTAssertEqual(try storage?.get(key: "bar"), "def", "Not valid value")
-        do {
-            try storage?.rollback()
-        } catch {
-            XCTFail("wrong error")
-        }
+
+        try! storage?.rollback()
 
         XCTAssertEqual(try storage?.get(key: "foo"), "123", "Not valid value")
         XCTAssertEqual(try storage?.get(key: "bar"), "abc", "Not valid value")
-        do {
-            try storage?.commit()
-        } catch TransactionalStorage.TransactionalStorageError.noTransaction{
-            print("noTransaction")
-        } catch {
-            XCTFail("wrong error")
+        XCTAssertThrowsError(try storage?.commit(), "wrong error") { error in
+            XCTAssertEqual(error as? TransactionalStorage.TransactionalStorageError, TransactionalStorage.TransactionalStorageError.noTransaction)
         }
     }
 
@@ -108,21 +88,9 @@ class store_test: XCTestCase {
         storage?.set(key: "foo", value: "789")
 
         XCTAssertEqual(try storage?.get(key: "foo"), "789", "Not valid value")
-
-        do {
-            try storage?.rollback()
-        } catch {
-            XCTFail("wrong error")
-        }
-
+        try! storage?.rollback()
         XCTAssertEqual(try storage?.get(key: "foo"), "456", "Not valid value")
-
-        do {
-            try storage?.rollback()
-        } catch {
-            XCTFail("wrong error")
-        }
-
+        try! storage?.rollback()
         XCTAssertEqual(try storage?.get(key: "foo"), "123", "Not valid value")
     }
 }

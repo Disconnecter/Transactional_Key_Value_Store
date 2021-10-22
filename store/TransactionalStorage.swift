@@ -12,10 +12,9 @@ final class TransactionalStorage {
         case noTransaction
     }
 
-    private var stack: LIFO<[AnyHashable: AnyHashable]>
+    private var stack: LIFO<[AnyHashable: AnyHashable]> = LIFO()
 
     init() {
-        self.stack = LIFO()
         self.begin()
     }
 
@@ -63,11 +62,7 @@ final class TransactionalStorage {
     - Returns: the number of keys that have the given value
     */
     func count(value: AnyHashable) -> Int {
-        guard let set = stack.peek()
-        else {
-            return 0
-        }
-        return set.values.filter({ $0 == value}).count
+        stack.peek()?.values.filter({ $0 == value }).count ?? 0
     }
 
     /**
@@ -78,13 +73,12 @@ final class TransactionalStorage {
         stack.push([AnyHashable: AnyHashable]())
     }
 
-
     /**
     `COMMIT`
      complete the current transaction
     */
     func commit() throws {
-        guard let last = stack.pop()
+        guard stack.count > 1, let last = stack.pop()
         else {
             throw TransactionalStorageError.noTransaction
         }

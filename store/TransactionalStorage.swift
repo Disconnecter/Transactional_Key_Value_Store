@@ -70,7 +70,6 @@ final class TransactionalStorage {
         return set.values.filter({ $0 == value}).count
     }
 
-
     /**
     `BEGIN`
      start a new transaction
@@ -104,11 +103,10 @@ final class TransactionalStorage {
      revert to state prior to `BEGIN` call
     */
     func rollback() throws {
-        if stack.count > 1 {
-            stack.pop()
-        } else {
+        guard stack.count > 1 else {
             throw TransactionalStorageError.noTransaction
         }
+        stack.pop()
     }
 
 }

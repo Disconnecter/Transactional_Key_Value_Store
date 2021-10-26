@@ -13,10 +13,6 @@ struct LIFO<Element> where Element: Equatable {
         storage.count
     }
 
-    var isEmpty: Bool {
-        peek() == nil
-    }
-
     func peek() -> Element? {
         storage.last
     }

@@ -30,12 +30,7 @@ class store_test: XCTestCase {
 
     func testDelete() throws {
         storage?.set(key: "foo", value: "123")
-        do {
-            try storage?.delete(key: "foo")
-        } catch {
-            XCTFail("wrong error")
-        }
-
+        try! storage?.delete(key: "foo")
         XCTAssertThrowsError(try storage?.get(key: "foo"), "wrong error") { error in
             XCTAssertEqual(error as? TransactionalStorage.TransactionalStorageError, TransactionalStorage.TransactionalStorageError.keyNotSet)
         }
